@@ -1,0 +1,17 @@
+<!-- Embed code for Payload/Vercel CMS -->
+<iframe
+  src="https://reykjanesbaer.github.io/leikskolagjald-reiknivel/"
+  title="Leikskólagjald Reiknivél"
+  style="width: 100%; height: 1000px; border: 0;"
+></iframe>
+
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && Object.prototype.hasOwnProperty.call(e.data, 'calcHeight')) {
+      const iframe = document.querySelector('iframe[title="Leikskólagjald Reiknivél"]');
+      if (iframe) {
+        iframe.style.height = e.data.calcHeight + 'px';
+      }
+    }
+  });
+</script>
