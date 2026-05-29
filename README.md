@@ -4,7 +4,7 @@ Reiknivél fyrir áætlaðan útreikning leikskólagjalda hjá Reykjanesbæ.
 
 ## GitHub Pages
 
-Reiknivélin er hýst með GitHub Pages:
+Afrit af reiknivélinni er hýst með GitHub Pages:
 
 https://reykjanesbaer.github.io/leikskolagjald-reiknivel/
 
@@ -24,7 +24,7 @@ Ef vefumsjónarkerfið styður sérsniðinn JavaScript-kóða má nota resize-sc
 
 ## Content Security Policy
 
-Ef reiknivélin birtist ekki í iframe á Payload/Vercel vefnum þarf að leyfa GitHub Pages slóðina í `frame-src` í CSP headers:
+Ef reiknivélin birtist ekki í iframe á ytri vef þarf að leyfa GitHub Pages slóðina í `frame-src` í Content Security Policy stillingum vefsins:
 
 ```text
 https://reykjanesbaer.github.io
@@ -33,10 +33,10 @@ https://reykjanesbaer.github.io
 Dæmi:
 
 ```text
-frame-src 'self' ... forms.office.com https://reykjanesbaer.github.io;
+frame-src 'self' ... https://reykjanesbaer.github.io;
 ```
 
-Þetta er líklega stillt í frontend/deployment config, til dæmis `next.config.js`, `middleware.ts`, `vercel.json` eða server headers.
+Þessi stilling er yfirleitt í vefkerfi, deployment config eða server headers þess vefs sem birtir reiknivélina.
 
 ## Uppruni
 
