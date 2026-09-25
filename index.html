@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="is" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Leikskólagjald Reiknivél</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="reiknivel/reiknivel.css">
+</head>
+<body>
+  <!--
+    Leikskólagjaldareiknivél Reykjanesbæjar.
+
+    Þetta er reiknivélin sjálf — það sem innfellingar á vef bæjarins vísa á.
+    Kóðasmiður fyrir ritstjóra er á /ritstjorn/.
+
+    Stillt með færibreytum í slóð, t.d.:
+      ?theme=dark&frame=0&maxchildren=3
+    Gjaldskráin er gögn í gjaldskra/<ár>.json og er valin með ?ar=<ár>.
+    Sjá README fyrir allar stillingar.
+  -->
+  <div class="calc" id="calc">
+    <div class="calc-head" id="head">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect width="16" height="20" x="4" y="2" rx="2"></rect><line x1="8" x2="16" y1="6" y2="6"></line>
+        <line x1="16" x2="16" y1="14" y2="14"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path>
+        <path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path>
+        <path d="M12 18h.01"></path><path d="M8 18h.01"></path>
+      </svg>
+      <h1>Leikskólagjald Reiknivél</h1>
+    </div>
+
+    <p class="villa" id="villa" hidden></p>
+
+    <form class="fields" id="calcForm">
+      <div class="field">
+        <label for="numChildren">Fjöldi barna</label>
+        <select id="numChildren"></select>
+      </div>
+      <div class="field">
+        <label for="hoursSel">Klukkustundir á dag</label>
+        <select id="hoursSel"></select>
+      </div>
+      <div class="checkbox">
+        <input type="checkbox" id="subsidized">
+        <div>
+          <label for="subsidized">Niðurgreitt dvalargjald</label>
+          <p>Fyrir einstæða foreldra og námsmenn í fullu dagnámi.</p>
+        </div>
+      </div>
+    </form>
+
+    <div class="results" id="results">
+      <h2>Niðurstöður</h2>
+      <div id="children"></div>
+      <div class="total"><span>Samtals á mánuði:</span><b id="grandTotal"></b></div>
+    </div>
+
+    <div class="food" id="foodBox">
+      <h2>Fæðisgjald skiptist á eftirfarandi hátt:</h2>
+      <div id="foodList"></div>
+    </div>
+
+    <p class="note" id="noteBox">Eingöngu er um áætlun að ræða miðað við þær forsendur sem eru valdar og með fyrirvara um hugsanlegar villur.</p>
+
+    <!-- Aðeins heildartalan er tilkynnt, ekki öll sundurliðunin -->
+    <div class="sr-only" aria-live="polite" id="live"></div>
+  </div>
+
+  <script src="reiknivel/utreikningur.js"></script>
+  <script src="reiknivel/config.js"></script>
+  <script src="reiknivel/reiknivel.js"></script>
+</body>
+</html>
