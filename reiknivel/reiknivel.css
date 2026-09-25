@@ -1,0 +1,230 @@
+/*
+ * Leikskólagjald — útlit.
+ *
+ * Allir litir eru CSS-breytur á :root; reiknivel.js yfirskrifar þær út frá
+ * færibreytum í slóðinni (accent, onaccent, bg, bgdark, radius).
+ *
+ * --c-accent      fleti með völdum texta á (samtalsstikan)
+ * --c-accent-text texti, tákn og kantur. Reiknuð útgáfa höfuðlitsins sem
+ *                 nær AA (4.5:1) á bakgrunninum — sjá laesilegur() í
+ *                 config.js. Í dökku þema er hún ljósari en höfuðliturinn.
+ */
+
+:root {
+  --c-font: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --c-bg: #FFFFFF;
+  --c-ink: #1F2937;
+  --c-muted: #646C7A;
+  --c-faint: #6B7280;
+  --c-line: #E5E7EB;
+  --c-soft: #F3F4F6;
+  --c-field: #FFFFFF;
+  --c-accent: #1D4D91;
+  --c-accent-text: #1D4D91;
+  --c-on-accent: #FFFFFF;
+  --c-neg: #DC2626;
+  --c-radius: 16px;
+}
+
+/* Dökkt þema — sjálfvirkt eftir stillingum notanda (theme=auto) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-bg: #1B2024;
+    --c-ink: #E8ECEF;
+    --c-muted: #A3ADB4;
+    --c-faint: #949EA5;
+    --c-line: #333C42;
+    --c-soft: #242B30;
+    --c-field: #232A2F;
+    --c-neg: #F98080;
+  }
+}
+
+/* Dökkt þema — þvingað með ?theme=dark */
+:root[data-theme="dark"] {
+  --c-bg: #1B2024;
+  --c-ink: #E8ECEF;
+  --c-muted: #A3ADB4;
+  --c-faint: #949EA5;
+  --c-line: #333C42;
+  --c-soft: #242B30;
+  --c-field: #232A2F;
+  --c-neg: #F98080;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/*
+ * display: flex / grid á .calc-head og .fields yfirskrifar [hidden] úr
+ * sjálfgefnu stílblaði vafrans, svo title=0 og villuskilaboð fela ekki
+ * neitt án þessarar reglu.
+ */
+[hidden] { display: none !important; }
+
+/*
+ * Síðan sjálf er gegnsæ svo iframe-inn falli inn í síðuna sem hann er
+ * felldur inn í; bakgrunnurinn er á .calc.
+ */
+body {
+  margin: 0;
+  background: transparent;
+  font-family: var(--c-font);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+.calc {
+  background: var(--c-bg);
+  color: var(--c-ink);
+  border: 1px solid var(--c-line);
+  border-radius: var(--c-radius);
+  padding: 1rem;
+  text-align: left;
+}
+
+@media (min-width: 40rem) {
+  .calc { padding: 2rem; }
+}
+
+/* ?frame=0 — enginn rammi og enginn bakgrunnur, fellur inn í síðuna */
+.calc.bare {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ---------- haus ---------- */
+.calc-head {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+  color: var(--c-accent-text);
+}
+.calc-head svg { width: 1.75rem; height: 1.75rem; flex: none; }
+.calc-head h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--c-ink);
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+}
+
+/* ---------- innsláttur ---------- */
+.fields { display: grid; gap: 1rem; }
+.field > label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: .25rem; }
+.field select {
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  padding: .75rem;
+  border-radius: 8px;
+  border: 2px solid var(--c-line);
+  background: var(--c-field);
+  color: var(--c-ink);
+}
+.checkbox {
+  border: 2px solid var(--c-line);
+  border-radius: 8px;
+  padding: .75rem;
+  background: var(--c-field);
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+}
+.checkbox input { width: 1.25rem; height: 1.25rem; margin: .1rem 0 0; flex: none; accent-color: var(--c-accent); }
+.checkbox label { font-size: .875rem; font-weight: 600; cursor: pointer; }
+.checkbox p { margin: .25rem 0 0; font-size: .6875rem; color: var(--c-muted); line-height: 1.35; }
+
+/* Sýnilegur fókushringur, líka í dökku þema */
+.calc :focus-visible {
+  outline: 2px solid var(--c-accent-text);
+  outline-offset: 2px;
+  border-color: var(--c-accent-text);
+}
+
+/* ---------- niðurstöður ---------- */
+.results { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--c-line); }
+.results > h2 { margin: 0 0 1rem; font-size: 1.125rem; font-weight: 700; }
+.child {
+  border: 1px solid var(--c-line);
+  border-left: 4px solid var(--c-accent-text);
+  border-radius: 8px;
+  padding: .75rem;
+  margin-bottom: .75rem;
+}
+.child h3 { margin: 0 0 .5rem; font-size: .875rem; font-weight: 600; color: var(--c-accent-text); }
+.row { display: flex; justify-content: space-between; gap: .5rem; font-size: .875rem; color: var(--c-muted); }
+.row + .row { margin-top: .25rem; }
+.row b { font-weight: 500; color: var(--c-ink); }
+.row.neg { color: var(--c-neg); }
+.row.neg b { color: inherit; }
+.row.sum {
+  margin-top: .5rem;
+  padding-top: .5rem;
+  border-top: 1px solid var(--c-line);
+  font-weight: 700;
+  color: var(--c-ink);
+}
+.row.sum b { color: var(--c-accent-text); font-weight: 700; }
+.total {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+.total span { font-size: .9375rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+.total b { font-size: 1.375rem; font-weight: 800; }
+
+/* ---------- sundurliðun fæðisgjalds ---------- */
+.food {
+  margin-top: 1.5rem;
+  border: 1px solid var(--c-line);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--c-soft);
+}
+.food h2 { margin: 0 0 .75rem; font-size: .875rem; font-weight: 600; }
+.food div { font-size: .75rem; color: var(--c-muted); }
+.food div + div { margin-top: .25rem; }
+.food b { font-weight: 500; color: var(--c-ink); }
+
+/* ---------- fyrirvari ---------- */
+.note {
+  margin: 2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--c-line);
+  font-size: .625rem;
+  font-style: italic;
+  color: var(--c-faint);
+  line-height: 1.6;
+}
+
+/* ---------- villuskilaboð ---------- */
+.villa {
+  margin: 0;
+  padding: .9rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--c-neg);
+  background: var(--c-soft);
+  color: var(--c-ink);
+  font-size: .875rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

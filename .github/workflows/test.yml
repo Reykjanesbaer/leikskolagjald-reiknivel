@@ -1,0 +1,22 @@
+# Ber útreikninginn saman við upprunalegu reiknivélina: 1–5 börn × 10
+# klukkustundastillingar × niðurgreitt/ekki = 100 tilvik, engin frávik leyfð.
+# Engar dependencies — bara node.
+name: Próf
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  utreikningur:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: node test/utreikningur.test.js
