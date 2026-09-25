@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Leikskólagjald – forskoðun og kóðasmiður</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page: #EEF1F3; --panel: #FFFFFF; --ink: #1F2629; --muted: #5C676C; --line: #D5DCDF;
+    --accent: #1D4D91;
+    --font: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page: #16191B; --panel: #1F2427; --ink: #E7ECEE; --muted: #9AA6AB; --line: #323B3F; --accent: #8FB4E4; }
+  }
+  :root[data-theme="dark"] { --page: #16191B; --panel: #1F2427; --ink: #E7ECEE; --muted: #9AA6AB; --line: #323B3F; --accent: #8FB4E4; }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--font); font-size: 1rem; line-height: 1.5; }
+  main { max-width: 62rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+  h1 { font-weight: 800; font-size: clamp(1.7rem, 5vw, 2.3rem); line-height: 1.15; margin: 0 0 .35rem; }
+  .lede { color: var(--muted); margin: 0 0 1.5rem; max-width: 40rem; }
+  h2 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .75rem; }
+  h3 { font-size: 1rem; font-weight: 700; margin: 0; }
+
+  .stage { padding: 1.25rem; border-radius: 16px; background:
+    repeating-conic-gradient(color-mix(in srgb, var(--line) 45%, transparent) 0 25%, transparent 0 50%) 0 0 / 18px 18px; }
+  .holder { width: 100%; }
+  #preview { display: block; width: 100%; height: 900px; border: 0; color-scheme: normal; }
+
+  /* ================= kóðasmiður ================= */
+  .settings, .code { margin-top: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.25rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1.1rem 1.75rem; }
+  .ctl .head { font-weight: 700; font-size: .95rem; display: flex; justify-content: space-between; gap: .5rem; margin-bottom: .3rem; }
+  .ctl output { font-weight: 500; color: var(--muted); }
+  .ctl .note2 { color: var(--muted); font-size: .85rem; margin: .3rem 0 0; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  select, input[type=text], input[type=number] { width: 100%; font: inherit; font-size: .95rem; padding: .4rem .55rem;
+    border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+  input[aria-invalid=true] { border-color: #C5192D; box-shadow: 0 0 0 1px #C5192D; }
+  .seg-ctl { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .seg-ctl label { flex: 1; text-align: center; padding: .35rem .4rem; cursor: pointer; font-size: .92rem; }
+  .seg-ctl input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg-ctl label:has(input:checked) { background: var(--accent); color: var(--panel); font-weight: 700; }
+  .seg-ctl label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -3px; }
+  .checks { display: grid; gap: .35rem; }
+  .checks label { display: flex; gap: .5rem; align-items: center; font-size: .95rem; cursor: pointer; }
+  .checks input { accent-color: var(--accent); width: 1.05rem; height: 1.05rem; }
+  .wrow { display: grid; grid-template-columns: 1fr 6.5rem; gap: .5rem; align-items: center; }
+  .colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: .55rem 1.75rem; }
+  .crow { display: grid; grid-template-columns: 2.4rem 1fr 6.2rem; align-items: center; gap: .6rem; }
+  .crow input[type=color] { width: 2.4rem; height: 2.1rem; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: none; cursor: pointer; }
+  .crow input[type=text] { text-transform: uppercase; }
+  .crow input[type=text]::placeholder { text-transform: none; }
+  .crow span { font-size: .95rem; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 1.25rem 0; }
+  .sec-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .75rem; flex-wrap: wrap; }
+  .btn { font: inherit; font-size: .9rem; font-weight: 700; border-radius: 9px; padding: .4rem .8rem; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .prices { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .6rem 1.25rem; }
+  .prow { display: grid; grid-template-columns: 1fr 7rem; gap: .5rem; align-items: center; font-size: .92rem; }
+  .warn { margin: .75rem 0 0; padding: .6rem .8rem; border-radius: 9px; font-size: .9rem;
+    background: color-mix(in srgb, #C5192D 12%, transparent); border: 1px solid color-mix(in srgb, #C5192D 40%, transparent); }
+  .warn[hidden] { display: none; }
+  .tabs { display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  pre { margin: 0; overflow-x: auto; background: var(--page); border-radius: 10px; padding: .9rem 1rem;
+    font-size: .85rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .code-foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: .75rem; flex-wrap: wrap; }
+  .hint { color: var(--muted); font-size: .9rem; margin: 0; max-width: 38rem; }
+  code { font-size: .88em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Leikskólagjald</h1>
+  <p class="lede">Forskoðun og kóðasmiður. Stilltu útlitið og gjaldskrána hér fyrir neðan og afritaðu innfellingarkóðann. Forskoðunin er reiknivélin sjálf, nákvæmlega eins og hún birtist á vefnum.</p>
+
+  <div class="stage"><div class="holder" id="holder">
+    <iframe id="preview" title="Forskoðun: Leikskólagjald reiknivél" scrolling="no"></iframe>
+  </div></div>
+
+  <form class="settings" id="form" onsubmit="return false">
+    <h2>Útlit og hegðun</h2>
+    <div class="grid">
+      <div class="ctl"><span class="head">Þema</span>
+        <div class="seg-ctl" role="radiogroup" aria-label="Þema">
+          <label><input type="radio" name="theme" value="auto">Sjálfv.</label>
+          <label><input type="radio" name="theme" value="light">Ljóst</label>
+          <label><input type="radio" name="theme" value="dark">Dökkt</label>
+        </div>
+        <p class="note2">Sjálfvirkt fylgir stillingu notandans í stýrikerfinu.</p></div>
+      <div class="ctl"><label class="head" for="radius">Hornarúnnun <output id="o-radius"></output></label>
+        <input id="radius" name="radius" type="range" min="0" max="32" step="1"></div>
+      <div class="ctl"><span class="head">Sýna</span>
+        <div class="checks">
+          <label><input type="checkbox" name="title"> Titil og tákn</label>
+          <label><input type="checkbox" name="food"> Sundurliðun fæðisgjalds</label>
+          <label><input type="checkbox" name="note"> Fyrirvara</label>
+          <label><input type="checkbox" name="frame"> Ramma og bakgrunn</label>
+        </div></div>
+      <div class="ctl"><label class="head" for="wval">Breidd</label>
+        <div class="wrow"><input id="wval" name="wval" type="number" inputmode="numeric">
+          <div class="seg-ctl" role="radiogroup" aria-label="Eining breiddar">
+            <label><input type="radio" name="wunit" value="%">%</label>
+            <label><input type="radio" name="wunit" value="px">px</label>
+          </div></div>
+        <p class="note2">% = hlutfall af plássinu (1–100), px = föst breidd (200–2000).</p></div>
+      <div class="ctl"><label class="head" for="mval">Hámarksbreidd</label>
+        <div class="wrow"><input id="mval" name="mval" type="number" inputmode="numeric" placeholder="ekkert">
+          <div class="seg-ctl" role="radiogroup" aria-label="Eining hámarksbreiddar">
+            <label><input type="radio" name="munit" value="%">%</label>
+            <label><input type="radio" name="munit" value="px">px</label>
+          </div></div>
+        <p class="note2">Tómt = ekkert hámark. Alltaf klemmt við 100 %.</p></div>
+      <div class="ctl"><span class="head">Staðsetning á síðu</span>
+        <div class="seg-ctl" role="radiogroup" aria-label="Staðsetning á síðu">
+          <label><input type="radio" name="align" value="left">Vinstri</label>
+          <label><input type="radio" name="align" value="center">Miðja</label>
+          <label><input type="radio" name="align" value="right">Hægri</label>
+        </div></div>
+    </div>
+
+    <hr>
+    <div class="sec-head"><h3>Litir</h3><button type="button" class="btn" id="resetColors">Upprunalegir litir</button></div>
+    <div class="colors" id="colors"></div>
+
+    <hr>
+    <div class="sec-head"><h3>Sjálfgefin gildi í reiknivélinni</h3></div>
+    <div class="grid">
+      <div class="ctl"><label class="head" for="dchildren">Fjöldi barna</label>
+        <select id="dchildren" name="dchildren"></select></div>
+      <div class="ctl"><label class="head" for="dhours">Klukkustundir</label>
+        <select id="dhours" name="dhours"></select></div>
+      <div class="ctl"><label class="head" for="maxchildren">Flest börn í valmynd <output id="o-maxchildren"></output></label>
+        <input id="maxchildren" name="maxchildren" type="range" min="1" max="10" step="1"></div>
+      <div class="ctl"><span class="head">Niðurgreitt</span>
+        <div class="checks"><label><input type="checkbox" name="dsub"> Haka sjálfgefið við</label></div></div>
+      <div class="ctl"><label class="head" for="ar">Gjaldskrárár</label>
+        <select id="ar" name="ar"></select>
+        <p class="note2">Sjálfgefið fylgir reiknivélin virka árinu í <code>gjaldskra/index.json</code>.</p></div>
+    </div>
+  </form>
+
+  <form class="settings" id="priceForm" onsubmit="return false">
+    <div class="sec-head">
+      <h2>Gjaldskrá</h2>
+      <div>
+        <button type="button" class="btn" id="resetPrices">Núverandi gjaldskrá</button>
+        <button type="button" class="btn primary" id="copyPrices">Afrita gjaldskrá (JSON)</button>
+      </div>
+    </div>
+    <p class="hint" style="margin-bottom:1rem">Uppfært einu sinni á ári. Breytingar hér eru aðeins til að prófa og vistast hvergi — til að festa nýja gjaldskrá afritarðu JSON-ið og vistar það sem <code>gjaldskra/&lt;ár&gt;.json</code> í repóinu. Gjaldskrártölur fara aldrei í innfellingarkóðann.</p>
+
+    <div class="grid">
+      <div class="ctl"><label class="head" for="p-ar">Ár</label><input id="p-ar" type="text" inputmode="numeric"></div>
+      <div class="ctl"><label class="head" for="p-gildirFra">Gildir frá</label><input id="p-gildirFra" type="text" placeholder="2026-01-01"></div>
+    </div>
+
+    <hr>
+    <h3>Dvalargjald eftir klukkustundum (kr. á mánuði)</h3>
+    <div class="prices" id="careRows" style="margin-top:.75rem"></div>
+
+    <hr>
+    <h3>Fæðisgjald (kr. á mánuði)</h3>
+    <div class="prices" id="foodRows" style="margin-top:.75rem"></div>
+    <p class="warn" id="foodWarn" hidden></p>
+
+    <hr>
+    <h3>Afslættir og álag</h3>
+    <div class="prices" id="miscRows" style="margin-top:.75rem"></div>
+    <p class="hint" style="margin-top:.75rem">Systkinaafsláttur: hlutfall dvalargjalds sem greitt er fyrir hvert barn. Síðasta gildið gildir líka um öll börn þar á eftir.</p>
+  </form>
+
+  <section class="code">
+    <h2>Innfellingarkóði</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" class="btn" role="tab" aria-selected="true" data-tab="iframe">iframe (mælt með)</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-tab="script">Skrifta</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-tab="url">Slóð</button>
+    </div>
+    <pre id="codeOut"></pre>
+    <div class="code-foot">
+      <p class="hint" id="codeHint"></p>
+      <button type="button" class="btn primary" id="copyCode">Afrita kóða</button>
+    </div>
+  </section>
+</main>
+
+<script src="../reiknivel/utreikningur.js"></script>
+<script src="../reiknivel/config.js"></script>
+<script>
+/*
+ * Kóðasmiður. Forskoðunin er raunverulega reiknivélin (rótin) í iframe, svo
+ * ritstjóri sjái nákvæmlega það sem fer á vefinn. Nýjar stillingar og
+ * gjaldskrá til prófunar eru sendar henni með postMessage — hún endurhleðst
+ * ekki og valið í forskoðuninni helst.
+ *
+ * Gjaldskrártölur fara aldrei í slóðina eða innfellingarkóðann. Aðeins ar.
+ */
+(function () {
+  'use strict';
+
+  var cfg = window.LeikskolagjaldConfig;
+  var R = window.LeikskolagjaldReikn;
+
+  /* Reiknivélin er einu þrepi ofar en kóðasmiðurinn */
+  var BASE = new URL('../', location.href).href;
+  var GJALDSKRA = BASE + 'gjaldskra/';
+  var frameId = 'lg-' + Math.random().toString(36).slice(2, 10);
+
+  function $(id) { return document.getElementById(id); }
+
+  var form = $('form'), priceForm = $('priceForm'), frame = $('preview');
+  var qs = new URLSearchParams(location.search);
+
+  var opts = cfg.parse();
+  var FRAME_DEF = { width: cfg.SIZE.width.def, maxw: cfg.SIZE.maxWidth.def, align: 'left' };
+  var frameOpts = {
+    width: cfg.parseSize(qs.get('width'), 'width') || FRAME_DEF.width,
+    maxw: cfg.parseSize(qs.get('maxw'), 'maxWidth') || FRAME_DEF.maxw,
+    align: ['left', 'center', 'right'].indexOf(qs.get('align')) !== -1 ? qs.get('align') : FRAME_DEF.align
+  };
+
+  var index = null;      /* gjaldskra/index.json                    */
+  var upprunaleg = null; /* gjaldskráin eins og hún er í repóinu    */
+  var prices = null;     /* gjaldskráin eins og ritstjóri prófar hana */
+  var tab = 'iframe';
+
+  var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
+
+  /* ------------------------------------------------------------------ */
+  /* Litir                                                               */
+  /* ------------------------------------------------------------------ */
+  var COLOR_LABELS = {
+    accent: 'Höfuðlitur', onaccent: 'Texti á höfuðlit',
+    bg: 'Bakgrunnur (ljóst)', bgdark: 'Bakgrunnur (dökkt)'
+  };
+  var colorsBox = $('colors');
+
+  cfg.COLOR_KEYS.forEach(function (k) {
+    var row = document.createElement('div');
+    row.className = 'crow';
+    row.innerHTML = '<input type="color" data-ckey="' + k + '" aria-label="' + COLOR_LABELS[k] + ', litaval">' +
+      '<span>' + COLOR_LABELS[k] + '</span>' +
+      '<input type="text" data-hkey="' + k + '" maxlength="7" spellcheck="false" aria-label="' +
+      COLOR_LABELS[k] + ', hex-kóði"' + (cfg.BG_FALLBACK[k] ? ' placeholder="sjálfgefið"' : '') + '>';
+    colorsBox.appendChild(row);
+  });
+
+  function colorsToForm() {
+    cfg.COLOR_KEYS.forEach(function (k) {
+      var c = colorsBox.querySelector('[data-ckey=' + k + ']');
+      var h = colorsBox.querySelector('[data-hkey=' + k + ']');
+      c.value = '#' + (opts[k] || cfg.BG_FALLBACK[k] || 'FFFFFF').toLowerCase();
+      if (document.activeElement !== h) {
+        h.value = opts[k] ? '#' + opts[k] : '';
+        h.removeAttribute('aria-invalid');
+      }
+    });
+  }
+
+  /* Skilar true ef atburðurinn var úr litareit (og hann meðhöndlaður) */
+  function colorFromInput(t) {
+    if (t.dataset && t.dataset.ckey) {
+      opts[t.dataset.ckey] = cfg.parseColor(t.value) || opts[t.dataset.ckey];
+      return true;
+    }
+    if (t.dataset && t.dataset.hkey) {
+      var k = t.dataset.hkey;
+      var v = String(t.value).trim();
+      if (cfg.BG_FALLBACK[k] && v === '') { opts[k] = ''; t.removeAttribute('aria-invalid'); return true; }
+      var hex = cfg.parseColor(v);
+      if (hex) { opts[k] = hex; t.removeAttribute('aria-invalid'); }
+      else t.setAttribute('aria-invalid', 'true');
+      return true;
+    }
+    return false;
+  }
+
+  $('resetColors').addEventListener('click', function () {
+    cfg.COLOR_KEYS.forEach(function (k) { opts[k] = cfg.SPEC[k].def; });
+    colorsToForm();
+    apply(false);
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* Stillingaform                                                       */
+  /* ------------------------------------------------------------------ */
+  function fyllaArValmynd() {
+    var sel = form.elements.ar;
+    sel.textContent = '';
+    var sjalf = document.createElement('option');
+    sjalf.value = '';
+    sjalf.textContent = 'Virka árið' + (index && index.virkt ? ' (' + index.virkt + ')' : '');
+    sel.appendChild(sjalf);
+    ((index && index.ar) || []).forEach(function (e) {
+      var o = document.createElement('option');
+      o.value = String(e.ar);
+      o.textContent = String(e.ar) + (e.gildirFra ? ' — gildir frá ' + e.gildirFra : '');
+      sel.appendChild(o);
+    });
+    sel.value = opts.ar;
+    if (sel.value !== opts.ar) { opts.ar = ''; sel.value = ''; }
+  }
+
+  function fyllaSjalfgefid() {
+    var dc = form.elements.dchildren, dh = form.elements.dhours;
+    dc.textContent = '';
+    dh.textContent = '';
+    for (var n = 1; n <= opts.maxchildren; n++) {
+      var o = document.createElement('option');
+      o.value = String(n);
+      o.textContent = n + (n === 1 ? ' barn' : ' börn');
+      dc.appendChild(o);
+    }
+    var klst = prices ? prices.klukkustundir : [opts.dhours];
+    klst.forEach(function (h) {
+      var o = document.createElement('option');
+      o.value = String(h);
+      o.textContent = String(h).replace('.', ',') + ' klst.';
+      dh.appendChild(o);
+    });
+    if (opts.dchildren > opts.maxchildren) opts.dchildren = opts.maxchildren;
+    if (klst.indexOf(opts.dhours) === -1) opts.dhours = klst[0];
+    dc.value = String(opts.dchildren);
+    dh.value = String(opts.dhours);
+  }
+
+  function toForm() {
+    form.elements.radius.value = opts.radius;
+    form.elements.maxchildren.value = opts.maxchildren;
+    ['theme', 'align'].forEach(function (n) {
+      var gildi = n === 'align' ? frameOpts.align : opts[n];
+      form.querySelectorAll('input[name=' + n + ']').forEach(function (r) { r.checked = r.value === gildi; });
+    });
+    ['title', 'food', 'note', 'frame', 'dsub'].forEach(function (n) { form.elements[n].checked = !!opts[n]; });
+    var sp = function (s) { var m = String(s).match(/^([\d.]+)(px|%)$/); return m ? [m[1], m[2]] : ['', 'px']; };
+    var w = sp(frameOpts.width), m = sp(frameOpts.maxw);
+    form.elements.wval.value = w[0];
+    form.elements.mval.value = m[0];
+    form.querySelectorAll('input[name=wunit]').forEach(function (r) { r.checked = r.value === w[1]; });
+    form.querySelectorAll('input[name=munit]').forEach(function (r) { r.checked = r.value === m[1]; });
+    fyllaArValmynd();
+    fyllaSjalfgefid();
+    colorsToForm();
+  }
+
+  function inv(n, bad) { if (bad) n.setAttribute('aria-invalid', 'true'); else n.removeAttribute('aria-invalid'); }
+
+  function fromForm(e) {
+    var t = e && e.target;
+    if (t && colorFromInput(t)) { colorsToForm(); apply(false); return; }
+
+    opts.radius = +form.elements.radius.value;
+    opts.maxchildren = +form.elements.maxchildren.value;
+    var th = form.querySelector('input[name=theme]:checked');
+    if (th) opts.theme = th.value;
+    var al = form.querySelector('input[name=align]:checked');
+    if (al) frameOpts.align = al.value;
+    ['title', 'food', 'note', 'frame', 'dsub'].forEach(function (n) {
+      opts[n] = form.elements[n].checked ? 1 : 0;
+    });
+
+    var wu = form.querySelector('input[name=wunit]:checked').value;
+    var mu = form.querySelector('input[name=munit]:checked').value;
+    var wv = form.elements.wval.value === '' ? '' : form.elements.wval.value + wu;
+    var mv = form.elements.mval.value === '' ? '' : form.elements.mval.value + mu;
+    var w = cfg.parseSize(wv, 'width');
+    var m = mv === '' ? 'none' : cfg.parseSize(mv, 'maxWidth');
+    inv(form.elements.wval, !w);
+    inv(form.elements.mval, !m);
+    if (w) frameOpts.width = w;
+    if (m) frameOpts.maxw = m;
+
+    opts.dchildren = +form.elements.dchildren.value;
+    opts.dhours = +form.elements.dhours.value;
+
+    var nyttAr = form.elements.ar.value;
+    var arBreyttist = nyttAr !== opts.ar;
+    opts.ar = nyttAr;
+
+    /*
+     * Aðeins stýringarnar undir „Sjálfgefin gildi“ endurstilla valið í
+     * forskoðuninni; að fikta í litum eða breidd má ekki henda því sem
+     * ritstjórinn er að prófa.
+     */
+    var n = t && t.name;
+    var endurstilla = ['dchildren', 'dhours', 'dsub', 'maxchildren'].indexOf(n) !== -1;
+
+    fyllaSjalfgefid();
+    if (arBreyttist) hladaAr(opts.ar); else apply(endurstilla);
+  }
+
+  form.addEventListener('input', fromForm);
+  form.addEventListener('change', fromForm);
+
+  /* ------------------------------------------------------------------ */
+  /* Gjaldskrárritill                                                    */
+  /* ------------------------------------------------------------------ */
+
+  /* Skipt á FYRSTA punkti: lyklar eins og „dvalargjald.4.5“ bera tugabrot */
+  function splitKey(key) {
+    var i = key.indexOf('.');
+    return i < 0 ? [key, ''] : [key.slice(0, i), key.slice(i + 1)];
+  }
+
+  function numRow(box, label, key) {
+    var d = document.createElement('div');
+    d.className = 'prow';
+    var l = document.createElement('label');
+    l.textContent = label;
+    var i = document.createElement('input');
+    i.type = 'number';
+    i.inputMode = 'decimal';
+    i.dataset.pkey = key;
+    l.htmlFor = i.id = 'pk-' + key.replace(/[^a-z0-9]/gi, '_');
+    d.append(l, i);
+    box.appendChild(d);
+  }
+
+  function buildPriceRows() {
+    var care = $('careRows'), food = $('foodRows'), misc = $('miscRows');
+    care.textContent = ''; food.textContent = ''; misc.textContent = '';
+    prices.klukkustundir.forEach(function (h) {
+      if (prices.dvalargjald[R.hourKey(h)] == null) return;
+      numRow(care, String(h).replace('.', ',') + ' klst.', 'dvalargjald.' + h);
+    });
+    numRow(food, 'Fæðisgjald alls', 'faedisgjald');
+    prices.faedisgjaldSundurlidun.forEach(function (it, i) {
+      numRow(food, it.heiti, 'faedisgjaldSundurlidun.' + i);
+    });
+    numRow(misc, 'Aukaklukkustund (heil)', 'aukaKlukkustund');
+    numRow(misc, 'Niðurgreiðsla (%)', 'nidurgreidsla');
+    Object.keys(prices.nidurgreidslaUndantekningar).forEach(function (h) {
+      numRow(misc, 'Niðurgr. undantekning, ' + String(h).replace('.', ',') + ' klst.', 'undantekning.' + h);
+    });
+    prices.systkinaafslattur.forEach(function (_, i) {
+      numRow(misc, 'Barn ' + (i + 1) + (i === prices.systkinaafslattur.length - 1 ? '+' : '') + ' greiðir (%)',
+        'systkina.' + i);
+    });
+    pricesToForm();
+  }
+
+  function getPrice(key) {
+    var p = splitKey(key), a = p[0], b = p[1];
+    if (a === 'dvalargjald') return prices.dvalargjald[b];
+    if (a === 'faedisgjaldSundurlidun') return prices.faedisgjaldSundurlidun[+b].verd;
+    if (a === 'undantekning') return prices.nidurgreidslaUndantekningar[b];
+    if (a === 'systkina') return Math.round(prices.systkinaafslattur[+b] * 100);
+    if (a === 'nidurgreidsla') return Math.round(prices.nidurgreidsla * 100);
+    return prices[a];
+  }
+
+  /* Skilar false ef gildið er ógilt (tómt, neikvætt, prósenta yfir 100) */
+  function setPrice(key, raw) {
+    var n = Number(raw);
+    if (String(raw).trim() === '' || !isFinite(n) || n < 0) return false;
+    var p = splitKey(key), a = p[0], b = p[1];
+    if (a === 'dvalargjald') prices.dvalargjald[b] = Math.round(n);
+    else if (a === 'faedisgjaldSundurlidun') prices.faedisgjaldSundurlidun[+b].verd = Math.round(n);
+    else if (a === 'undantekning') prices.nidurgreidslaUndantekningar[b] = Math.round(n);
+    else if (a === 'systkina') { if (n > 100) return false; prices.systkinaafslattur[+b] = n / 100; }
+    else if (a === 'nidurgreidsla') { if (n > 100) return false; prices.nidurgreidsla = n / 100; }
+    else prices[a] = Math.round(n);
+    return true;
+  }
+
+  function pricesToForm() {
+    priceForm.querySelectorAll('[data-pkey]').forEach(function (i) {
+      if (document.activeElement !== i) {
+        i.value = getPrice(i.dataset.pkey);
+        i.removeAttribute('aria-invalid');
+      }
+    });
+    $('p-ar').value = prices.ar;
+    $('p-gildirFra').value = prices.gildirFra;
+  }
+
+  priceForm.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.id === 'p-ar') { prices.ar = t.value.trim(); render(); return; }
+    if (t.id === 'p-gildirFra') { prices.gildirFra = t.value.trim(); render(); return; }
+    if (!t.dataset.pkey) return;
+    inv(t, !setPrice(t.dataset.pkey, t.value));
+    apply(false);
+  });
+
+  $('resetPrices').addEventListener('click', function () {
+    prices = clone(upprunaleg);
+    buildPriceRows();
+    apply(false);
+  });
+
+  /* Sundurliðun fæðisgjalds á móti skráðu fæðisgjaldi */
+  function checkFood() {
+    if (!prices) return;
+    var w = $('foodWarn');
+    var s = R.faedisgjaldSumma(prices);
+    if (s.stemmir) { w.hidden = true; return; }
+    w.hidden = false;
+    w.textContent = 'Sundurliðunin leggst saman í ' + R.kr(s.summa) + ' en fæðisgjaldið er skráð ' +
+      R.kr(prices.faedisgjald) + ' Reiknivélin notar skráða fæðisgjaldið.';
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Forskoðun og kóði                                                   */
+  /* ------------------------------------------------------------------ */
+  function widgetQuery() {
+    var p = new URLSearchParams();
+    cfg.changed(opts).forEach(function (kv) { p.set(kv[0], kv[1]); });
+    return p.toString();
+  }
+
+  function sendaIForskodun(endurstilla) {
+    if (!frame.contentWindow || !prices) return;
+    frame.contentWindow.postMessage({
+      type: 'leikskolagjald:options',
+      options: opts,
+      gjaldskra: prices,
+      endurstilla: !!endurstilla
+    }, location.origin);
+  }
+
+  /* Reiknivélin lætur vita um hæðina, svo forskoðunin sé jafnhá henni */
+  window.addEventListener('message', function (e) {
+    if (e.origin !== location.origin || e.source !== frame.contentWindow) return;
+    var d = e.data;
+    if (!d || d.type !== 'leikskolagjald:height') return;
+    var h = parseInt(d.height, 10);
+    if (isFinite(h) && h > 0 && h < 4000) frame.style.height = h + 'px';
+  });
+
+  function render() {
+    $('o-radius').textContent = opts.radius + ' px';
+    $('o-maxchildren').textContent = opts.maxchildren + (opts.maxchildren === 1 ? ' barn' : ' börn');
+    checkFood();
+
+    var wq = widgetQuery();
+    var url = BASE + (wq ? '?' + wq : '');
+    var sizeCss = cfg.sizeCss(frameOpts.width, frameOpts.maxw);
+    var marg = cfg.margins(frameOpts.align).replace(/;$/, '');
+    var haed = cfg.hydur(opts, opts.dchildren, prices ? prices.faedisgjaldSundurlidun.length : 3);
+    var code = '', hint = '';
+
+    if (tab === 'iframe') {
+      code = '<iframe\n' +
+        '  src="' + url + '"\n' +
+        '  title="Leikskólagjald reiknivél"\n' +
+        '  loading="lazy"\n' +
+        '  scrolling="no"\n' +
+        '  style="' + sizeCss + ';height:' + haed + 'px;border:0;display:block;' + marg + '">\n' +
+        '</iframe>';
+      hint = 'Hæðin er föst hér (' + haed + ' px, miðað við stillingarnar). Á mjóum skjá getur ' +
+        'reiknivélin orðið hærri — notaðu skriftuna ef þú vilt að hæðin fylgi innihaldinu sjálfkrafa.';
+    } else if (tab === 'script') {
+      var attrs = cfg.changed(opts).map(function (kv) { return '  data-' + kv[0] + '="' + kv[1] + '"'; });
+      if (frameOpts.width !== FRAME_DEF.width) attrs.push('  data-width="' + frameOpts.width + '"');
+      attrs.push('  data-max-width="' + frameOpts.maxw + '"');
+      if (frameOpts.align !== FRAME_DEF.align) attrs.push('  data-align="' + frameOpts.align + '"');
+      code = '<script\n  src="' + BASE + 'embed.js"\n' + attrs.join('\n') + '>\n<\/script>';
+      hint = 'Skriftan býr til iframe-inn og stillir hæðina sjálfkrafa eftir innihaldi. ' +
+        'Aðeins ef vefumsjónarkerfið leyfir <script>.';
+    } else {
+      code = url;
+      hint = 'Bein slóð á reiknivélina, t.d. til að prófa stillingar.';
+    }
+    $('codeOut').textContent = code;
+    $('codeHint').textContent = hint;
+
+    /* Slóð síðunnar geymir stillingarnar svo hægt sé að deila henni */
+    var pq = new URLSearchParams(wq);
+    if (frameOpts.width !== FRAME_DEF.width) pq.set('width', frameOpts.width);
+    if (frameOpts.maxw !== FRAME_DEF.maxw) pq.set('maxw', frameOpts.maxw);
+    if (frameOpts.align !== FRAME_DEF.align) pq.set('align', frameOpts.align);
+    try {
+      history.replaceState(null, '', location.pathname + (pq.toString() ? '?' + pq : ''));
+    } catch (e) { /* t.d. file:// */ }
+  }
+
+  function apply(endurstilla) {
+    $('holder').style.cssText = cfg.sizeCss(frameOpts.width, frameOpts.maxw) + ';' +
+      cfg.margins(frameOpts.align);
+    sendaIForskodun(endurstilla);
+    render();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Flipar og afritun                                                   */
+  /* ------------------------------------------------------------------ */
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      tab = b.dataset.tab;
+      document.querySelectorAll('.tabs button').forEach(function (x) {
+        x.setAttribute('aria-selected', String(x === b));
+      });
+      render();
+    });
+  });
+
+  function copy(text, btn, label) {
+    function done(t) {
+      btn.textContent = t;
+      setTimeout(function () { btn.textContent = label; }, 1800);
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () { done('Afritað'); },
+        function () { done('Afritun mistókst'); });
+    } catch (e) { done('Afritun mistókst'); }
+  }
+
+  $('copyCode').addEventListener('click', function (e) {
+    copy($('codeOut').textContent, e.currentTarget, 'Afrita kóða');
+  });
+  $('copyPrices').addEventListener('click', function (e) {
+    copy(JSON.stringify(prices, null, 2) + '\n', e.currentTarget, 'Afrita gjaldskrá (JSON)');
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* Hleðsla                                                             */
+  /* ------------------------------------------------------------------ */
+  function saekjaJson(url) {
+    return fetch(url, { cache: 'no-cache' }).then(function (svar) {
+      if (!svar.ok) throw new Error(svar.status + ' ' + svar.statusText);
+      return svar.json();
+    });
+  }
+
+  function villa(texti) {
+    var w = $('foodWarn');
+    w.hidden = false;
+    w.textContent = texti;
+  }
+
+  function hladaAr(beidni) {
+    var ar = R.veljaAr(index, beidni);
+    return saekjaJson(GJALDSKRA + R.skraFyrirAr(index, ar))
+      .then(function (raw) {
+        upprunaleg = R.normalize(raw);
+        prices = clone(upprunaleg);
+        buildPriceRows();
+        fyllaSjalfgefid();
+        apply(false);
+      })
+      .catch(function (e) {
+        villa('Ekki náðist að lesa gjaldskrá ' + ar + ' (' + e.message + ').');
+      });
+  }
+
+  frame.src = BASE + (function () {
+    var q = new URLSearchParams(widgetQuery());
+    q.set('frameId', frameId);
+    return '?' + q.toString();
+  })();
+
+  saekjaJson(GJALDSKRA + 'index.json')
+    .then(function (i) {
+      index = i;
+      toForm();
+      return hladaAr(opts.ar);
+    })
+    .catch(function (e) {
+      villa('Ekki náðist að lesa gjaldskra/index.json (' + e.message + ').');
+    });
+})();
+</script>
+</body>
+</html>
