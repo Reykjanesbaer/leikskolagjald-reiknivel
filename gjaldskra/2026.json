@@ -1,0 +1,26 @@
+{
+  "ar": "2026",
+  "gildirFra": "2026-01-01",
+  "klukkustundir": [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5],
+  "dvalargjald": {
+    "4": 18308,
+    "4.5": 20597,
+    "5": 22885,
+    "5.5": 25174,
+    "6": 27462,
+    "6.5": 29751,
+    "7": 32039,
+    "7.5": 34328,
+    "8": 36616
+  },
+  "aukaKlukkustund": 6903,
+  "faedisgjald": 12165,
+  "faedisgjaldSundurlidun": [
+    { "heiti": "Morgunhressing", "verd": 3075 },
+    { "heiti": "Hádegismatur", "verd": 6015 },
+    { "heiti": "Síðdegishressing", "verd": 3075 }
+  ],
+  "nidurgreidsla": 0.25,
+  "nidurgreidslaUndantekningar": { "8.5": 30052 },
+  "systkinaafslattur": [1, 0.5, 0]
+}
