@@ -187,11 +187,26 @@ profa('Starfsmannaafsláttur snertir ekki fæðisgjald', function () {
   });
 });
 
-profa('Starfsmannaafsláttur ofan á niðurgreiðslu', function () {
-  var nid = R.nidurgreittGjald(gj, 7);
-  var r = R.reikna(gj, 1, 7, true, true);
-  jafnt(r.born[0].dvalargjald, nid, 'Dvalargjald eftir niðurgreiðslu');
-  jafnt(r.born[0].samtals, Math.ceil(nid * 0.6) + 12165, 'Samtals');
+profa('Starfsmannaafsláttur sameinast ekki niðurgreiðslu (kafli 5)', function () {
+  [1, 2, 3].forEach(function (born) {
+    var bAedi = R.reikna(gj, born, 7, true, true);
+    var bNid = R.reikna(gj, born, 7, true, false);
+    jafnt(bAedi.samtals, bNid.samtals, born + ' börn: niðurgreiðsla gildir ein');
+    jafnt(bAedi.born[0].starfsmannaafslattur, 0, 'Enginn starfsmannaafsláttur');
+  });
+});
+
+profa('Dæmið í reglunum (kafli 6): 8 klst., 50 % systkina- + 25 % einstæðs', function () {
+  /* 36.616 × 50 % = 18.308, síðan 25 % af því = 4.577, eftir standa 13.731 */
+  var r = R.reikna(gj, 2, 8, true);
+  jafnt(r.born[1].samtals - r.born[1].faedisgjald, 13731, 'Lokagjald eldra barns');
+});
+
+profa('Starfsmannaafsláttur og systkinaafsláttur hver á eftir öðrum', function () {
+  /* 8 klst.: 36.616 × 60 % = 21.970 (upp), síðan 50 % = 10.985 */
+  var r = R.reikna(gj, 2, 8, false, true);
+  jafnt(r.born[1].samtals - r.born[1].faedisgjald, 10985, 'Lokagjald eldra barns');
+  jafnt(Math.round(36616 * 0.5 * 0.6), 10985, 'Sama í hinni röðinni');
 });
 
 profa('Námundun: eftirstandandi gjald námundað upp', function () {

@@ -96,6 +96,8 @@
     var o = {};
     KEYS.forEach(function (k) { o[k] = check(k, get(k)); });
     if (o.dchildren > o.maxchildren) o.dchildren = o.maxchildren;
+    /* Niðurgreiðslu og starfsmannaafslátt má ekki sameina; niðurgreiðsla gildir */
+    if (o.dsub && o.dstaff) o.dstaff = 0;
     return o;
   }
 

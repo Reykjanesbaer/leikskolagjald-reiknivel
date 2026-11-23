@@ -222,6 +222,9 @@ export const Leikskolagjald: Block = {
           type: 'checkbox',
           label: 'Starfsmannaafsláttur sjálfgefið hakaður',
           defaultValue: false,
+          admin: {
+            description: 'Má ekki sameina niðurgreiðslu. Sé hvort tveggja hakað gildir niðurgreiðslan.',
+          },
         },
       ],
     },

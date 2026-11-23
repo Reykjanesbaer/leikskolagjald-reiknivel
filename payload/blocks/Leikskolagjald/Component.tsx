@@ -130,7 +130,9 @@ export const LeikskolagjaldComponent: React.FC<LeikskolagjaldBlock> = ({
   if (born !== 1) params.set('dchildren', String(born))
   if (klst !== 4) params.set('dhours', String(klst))
   if (nidurgreitt) params.set('dsub', '1')
-  if (starfsmadur) params.set('dstaff', '1')
+  /* Niðurgreiðslu og starfsmannaafslátt má ekki sameina; niðurgreiðsla gildir */
+  const starfs = !!starfsmadur && !nidurgreitt
+  if (starfs) params.set('dstaff', '1')
   if (flest !== 5) params.set('maxchildren', String(flest))
 
   const litir: Record<string, string | null | undefined> = { accent, onaccent, bg, bgdark }
@@ -159,7 +161,7 @@ export const LeikskolagjaldComponent: React.FC<LeikskolagjaldBlock> = ({
           synaFaedi: synaFaedi !== false,
           synaFyrirvara: synaFyrirvara !== false,
           born,
-          starfsmadur: !!starfsmadur,
+          starfsmadur: starfs,
         }),
         border: 0,
         overflow: 'hidden',

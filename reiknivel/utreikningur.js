@@ -193,15 +193,19 @@
    * dvalargjald er gjaldið eftir niðurgreiðslu en fyrir aðra afslætti —
    * sama tala og upprunalega reiknivélin birti í línunni „Dvalargjald“.
    *
-   * Afslættir leggjast saman í þessari röð:
-   *   1. niðurgreiðsla (breytir sjálfu dvalargjaldinu)
-   *   2. starfsmannaafsláttur, af dvalargjaldinu
-   *   3. systkinaafsláttur, af því sem eftir stendur eftir starfsmannaafslátt
+   * Samkvæmt reglunum (kafli 6) reiknast afslættir hver á eftir öðrum,
+   * hver af því gjaldi sem eftir stendur, og eingöngu af tímagjaldi:
+   *   1. niðurgreiðsla EÐA starfsmannaafsláttur, af dvalargjaldinu
+   *   2. systkinaafsláttur, af því sem eftir stendur
+   *
+   * Niðurgreiðslu og starfsmannaafslátt má ekki sameina (kafli 5 leyfir
+   * aðeins systkinaafslátt með hvorum um sig). Sé beðið um hvort tveggja
+   * gildir niðurgreiðslan og starfsmannaafslátturinn er hunsaður.
    * Án starfsmannaafsláttar er útkoman nákvæmlega sú sama og áður.
    */
   function reikna(gj, fjoldiBarna, klst, nidurgreitt, starfsmadur) {
     var gjald = nidurgreitt ? nidurgreittGjald(gj, klst) : dvalargjald(gj, klst);
-    var starfs = starfsmadur ? starfsmannaafslattur(gj, gjald) : 0;
+    var starfs = starfsmadur && !nidurgreitt ? starfsmannaafslattur(gj, gjald) : 0;
     var grunnur = gjald - starfs;
     var faedi = gj.faedisgjald;
     var born = [];

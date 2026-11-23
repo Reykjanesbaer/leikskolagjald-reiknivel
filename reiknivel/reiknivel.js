@@ -232,12 +232,16 @@
     state.klst = +e.target.value;
     teikna();
   });
+  /* Niðurgreiðslu og starfsmannaafslátt má ekki sameina: annað hakið
+     tekur hitt af (reglur, kafli 5) */
   $('subsidized').addEventListener('change', function (e) {
     state.nidurgreitt = e.target.checked;
+    if (state.nidurgreitt) state.starfsmadur = false;
     teikna();
   });
   $('staff').addEventListener('change', function (e) {
     state.starfsmadur = e.target.checked;
+    if (state.starfsmadur) state.nidurgreitt = false;
     teikna();
   });
 

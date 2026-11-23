@@ -149,7 +149,7 @@ Allar stillingar eru færibreytur í slóðinni. Ógild gildi (utan bils eða
 | `dchildren` | `1`–`maxchildren` | `1` | Sjálfgefinn fjöldi barna |
 | `dhours` | gildi úr `klukkustundir` | `4` | Sjálfgefnar klukkustundir |
 | `dsub` | `0`, `1` | `0` | Niðurgreitt sjálfgefið hakað |
-| `dstaff` | `0`, `1` | `0` | Starfsmannaafsláttur sjálfgefið hakaður |
+| `dstaff` | `0`, `1` | `0` | Starfsmannaafsláttur sjálfgefið hakaður. Hunsað ef `dsub=1` |
 | `maxchildren` | `1`–`10` | `5` | Flest börn í valmyndinni |
 | `accent` | hex án `#` | `1D4D91` | Höfuðlitur |
 | `onaccent` | hex án `#` | `FFFFFF` | Texti á höfuðlit |
@@ -210,10 +210,14 @@ Reglurnar:
   `[1, 0.5, 0]` þýðir: fyrsta barn 100 %, annað 50 %, öll hin 0 %, sama hve
   börnin eru mörg.
 - **`starfsmannaafslattur`** reiknast eingöngu af dvalargjaldi, aldrei af
-  fæðisgjaldi. Afslættirnir leggjast saman í þessari röð: niðurgreiðsla
-  breytir dvalargjaldinu, starfsmannaafsláttur er tekinn af því og
-  systkinaafsláttur af því sem þá stendur eftir. Gjaldið eftir
-  starfsmannaafslátt er námundað upp, eins og niðurgreidda gjaldið.
+  fæðisgjaldi. Samkvæmt reglunum reiknast afslættir hver á eftir öðrum, hver
+  af því sem eftir stendur: fyrst niðurgreiðsla **eða** starfsmannaafsláttur,
+  síðan systkinaafsláttur. Gjaldið eftir starfsmannaafslátt er námundað upp,
+  eins og niðurgreidda gjaldið.
+- **Niðurgreiðslu og starfsmannaafslátt má ekki sameina.** Reglurnar leyfa
+  aðeins systkinaafslátt með hvorum um sig. Í reiknivélinni tekur annað hakið
+  hitt af, og sé beðið um hvort tveggja (`dsub=1&dstaff=1`) gildir
+  niðurgreiðslan.
 - **`nidurgreidslaUndantekningar`** heldur utan um tilvik þar sem niðurgreidda
   gjaldið er fast og víkur frá reglunni. Í gjaldskrá 2026 er þetta 8,5 klst.
   (30.052 kr., ekki 30.051 kr. sem reglan gæfi). **Ekki fjarlægja það.**

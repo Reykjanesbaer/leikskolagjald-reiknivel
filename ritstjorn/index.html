@@ -369,6 +369,9 @@
     if (th) opts.theme = th.value;
     var al = form.querySelector('input[name=align]:checked');
     if (al) frameOpts.align = al.value;
+    /* Niðurgreiðslu og starfsmannaafslátt má ekki sameina */
+    if (t && t.name === 'dsub' && t.checked) form.elements.dstaff.checked = false;
+    if (t && t.name === 'dstaff' && t.checked) form.elements.dsub.checked = false;
     ['title', 'food', 'note', 'frame', 'dsub', 'dstaff'].forEach(function (n) {
       opts[n] = form.elements[n].checked ? 1 : 0;
     });
