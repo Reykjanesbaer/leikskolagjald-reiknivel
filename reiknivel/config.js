@@ -28,6 +28,7 @@
     dchildren:   { def: 1,        num: [1, 10], heil: true },
     dhours:      { def: 4,        num: [0, 24] },
     dsub:        { def: 0,        bit: true },
+    dstaff:      { def: 0,        bit: true },
     maxchildren: { def: 5,        num: [1, 10], heil: true },
     accent:      { def: '1D4D91', color: true },
     onaccent:    { def: 'FFFFFF', color: true },
@@ -95,6 +96,8 @@
     var o = {};
     KEYS.forEach(function (k) { o[k] = check(k, get(k)); });
     if (o.dchildren > o.maxchildren) o.dchildren = o.maxchildren;
+    /* Niðurgreiðslu og starfsmannaafslátt má ekki sameina; niðurgreiðsla gildir */
+    if (o.dsub && o.dstaff) o.dstaff = 0;
     return o;
   }
 
@@ -223,9 +226,11 @@
     pad: 64,         /* 2rem að ofan og neðan (rammalaus útgáfa heldur þeim) */
     title: 54,       /* haus með spássíu undir                              */
     fields: 251,     /* þrír reitir með spássíum                            */
+    staff: 87,       /* hakið fyrir starfsmannaafslátt, með spássíu         */
     resultsHead: 88, /* spássía, lína og „Niðurstöður“                      */
     child: 151,      /* barnakort án systkinaafsláttarlínu                  */
     sibling: 25,     /* aukalínan „Systkinaafsláttur“ (börn 2 og upp úr)    */
+    staffLine: 25,   /* aukalínan „Starfsmannaafsláttur“ (öll börn)         */
     total: 81,       /* samtalsstikan                                       */
     foodBase: 87,    /* fæðisgjaldsreitur án lína                           */
     foodLine: 22,    /* hver lína í sundurliðuninni                         */
@@ -243,9 +248,10 @@
   function hydur(o, born, faedislinur) {
     var b = Math.max(1, Math.min(10, Math.round(born || o.dchildren || 1)));
     var linur = faedislinur === undefined ? 3 : faedislinur;
-    var h = H.pad + H.fields + H.resultsHead + H.total + H.slaki;
+    var h = H.pad + H.fields + H.staff + H.resultsHead + H.total + H.slaki;
     if (o.title) h += H.title;
     h += b * H.child + Math.max(0, b - 1) * H.sibling;
+    if (o.dstaff) h += b * H.staffLine;
     if (o.food) h += H.foodBase + linur * H.foodLine;
     if (o.note) h += H.note;
     return Math.round(h);

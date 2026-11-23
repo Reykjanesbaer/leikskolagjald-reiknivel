@@ -145,6 +145,8 @@
         <input id="maxchildren" name="maxchildren" type="range" min="1" max="10" step="1"></div>
       <div class="ctl"><span class="head">Niðurgreitt</span>
         <div class="checks"><label><input type="checkbox" name="dsub"> Haka sjálfgefið við</label></div></div>
+      <div class="ctl"><span class="head">Starfsmannaafsláttur</span>
+        <div class="checks"><label><input type="checkbox" name="dstaff"> Haka sjálfgefið við</label></div></div>
       <div class="ctl"><label class="head" for="ar">Gjaldskrárár</label>
         <select id="ar" name="ar"></select>
         <p class="note2">Sjálfgefið fylgir reiknivélin virka árinu í <code>gjaldskra/index.json</code>.</p></div>
@@ -178,7 +180,7 @@
     <hr>
     <h3>Afslættir og álag</h3>
     <div class="prices" id="miscRows" style="margin-top:.75rem"></div>
-    <p class="hint" style="margin-top:.75rem">Systkinaafsláttur: hlutfall dvalargjalds sem greitt er fyrir hvert barn. Síðasta gildið gildir líka um öll börn þar á eftir.</p>
+    <p class="hint" style="margin-top:.75rem">Systkinaafsláttur: hlutfall dvalargjalds sem greitt er fyrir hvert barn. Síðasta gildið gildir líka um öll börn þar á eftir. Starfsmannaafsláttur reiknast af dvalargjaldi á undan systkinaafslætti; 0 % felur hakið í reiknivélinni.</p>
   </form>
 
   <section class="code">
@@ -343,7 +345,7 @@
       var gildi = n === 'align' ? frameOpts.align : opts[n];
       form.querySelectorAll('input[name=' + n + ']').forEach(function (r) { r.checked = r.value === gildi; });
     });
-    ['title', 'food', 'note', 'frame', 'dsub'].forEach(function (n) { form.elements[n].checked = !!opts[n]; });
+    ['title', 'food', 'note', 'frame', 'dsub', 'dstaff'].forEach(function (n) { form.elements[n].checked = !!opts[n]; });
     var sp = function (s) { var m = String(s).match(/^([\d.]+)(px|%)$/); return m ? [m[1], m[2]] : ['', 'px']; };
     var w = sp(frameOpts.width), m = sp(frameOpts.maxw);
     form.elements.wval.value = w[0];
@@ -367,7 +369,10 @@
     if (th) opts.theme = th.value;
     var al = form.querySelector('input[name=align]:checked');
     if (al) frameOpts.align = al.value;
-    ['title', 'food', 'note', 'frame', 'dsub'].forEach(function (n) {
+    /* Niðurgreiðslu og starfsmannaafslátt má ekki sameina */
+    if (t && t.name === 'dsub' && t.checked) form.elements.dstaff.checked = false;
+    if (t && t.name === 'dstaff' && t.checked) form.elements.dsub.checked = false;
+    ['title', 'food', 'note', 'frame', 'dsub', 'dstaff'].forEach(function (n) {
       opts[n] = form.elements[n].checked ? 1 : 0;
     });
 
@@ -395,7 +400,7 @@
      * ritstjórinn er að prófa.
      */
     var n = t && t.name;
-    var endurstilla = ['dchildren', 'dhours', 'dsub', 'maxchildren'].indexOf(n) !== -1;
+    var endurstilla = ['dchildren', 'dhours', 'dsub', 'dstaff', 'maxchildren'].indexOf(n) !== -1;
 
     fyllaSjalfgefid();
     if (arBreyttist) hladaAr(opts.ar); else apply(endurstilla);
@@ -444,8 +449,10 @@
     Object.keys(prices.nidurgreidslaUndantekningar).forEach(function (h) {
       numRow(misc, 'Niðurgr. undantekning, ' + String(h).replace('.', ',') + ' klst.', 'undantekning.' + h);
     });
+    numRow(misc, 'Starfsmannaafsláttur (%)', 'starfsmannaafslattur');
     prices.systkinaafslattur.forEach(function (_, i) {
-      numRow(misc, 'Barn ' + (i + 1) + (i === prices.systkinaafslattur.length - 1 ? '+' : '') + ' greiðir (%)',
+      var sidast = i === prices.systkinaafslattur.length - 1;
+      numRow(misc, R.heitiBarns(i, 10) + (sidast && i > 0 ? ' og eldri' : '') + ' greiðir (%)',
         'systkina.' + i);
     });
     pricesToForm();
@@ -458,6 +465,7 @@
     if (a === 'undantekning') return prices.nidurgreidslaUndantekningar[b];
     if (a === 'systkina') return Math.round(prices.systkinaafslattur[+b] * 100);
     if (a === 'nidurgreidsla') return Math.round(prices.nidurgreidsla * 100);
+    if (a === 'starfsmannaafslattur') return Math.round((prices.starfsmannaafslattur || 0) * 100);
     return prices[a];
   }
 
@@ -471,6 +479,7 @@
     else if (a === 'undantekning') prices.nidurgreidslaUndantekningar[b] = Math.round(n);
     else if (a === 'systkina') { if (n > 100) return false; prices.systkinaafslattur[+b] = n / 100; }
     else if (a === 'nidurgreidsla') { if (n > 100) return false; prices.nidurgreidsla = n / 100; }
+    else if (a === 'starfsmannaafslattur') { if (n > 100) return false; prices.starfsmannaafslattur = n / 100; }
     else prices[a] = Math.round(n);
     return true;
   }

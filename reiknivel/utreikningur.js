@@ -52,7 +52,8 @@
       faedisgjaldSundurlidun: [],
       nidurgreidsla: 0,
       nidurgreidslaUndantekningar: {},
-      systkinaafslattur: [1]
+      systkinaafslattur: [1],
+      starfsmannaafslattur: 0
     };
 
     if (!gj.ar) villur.push('„ar“ vantar');
@@ -125,6 +126,13 @@
       if (hlutf.length) gj.systkinaafslattur = hlutf;
     }
 
+    /* Valfrjálst: gjaldskrá án reitsins hefur engan starfsmannaafslátt */
+    if (raw.starfsmannaafslattur != null) {
+      var st = tala(raw.starfsmannaafslattur);
+      if (st === null || st < 0 || st > 1) villur.push('„starfsmannaafslattur“ verður að vera hlutfall á milli 0 og 1');
+      else gj.starfsmannaafslattur = st;
+    }
+
     if (villur.length) throw new Error('Gjaldskráin er ógild: ' + villur.join('; ') + '.');
     return gj;
   }
@@ -166,26 +174,74 @@
   }
 
   /*
+   * Heiti barns nr. i (0-grunnað) af fjoldi börnum, raðað frá yngsta.
+   * Reglurnar segja að yngsta barnið greiði alltaf fullt gjald og að
+   * systkinaafsláttur reiknist af gjaldi eldri systkina, svo röðin í
+   * reiknivélinni er frá yngsta til elsta.
+   *
+   *   1 barn:    Barn
+   *   2 börn:    Yngra barn, Eldra barn
+   *   3 börn:    Yngsta barn, Næstelsta barn, Elsta barn
+   *   4+ börn:   Yngsta barn, Næstyngsta barn, Þriðja yngsta barn, … Elsta barn
+   */
+  var RADTOLUR = ['Þriðja', 'Fjórða', 'Fimmta', 'Sjötta', 'Sjöunda', 'Áttunda', 'Níunda'];
+
+  function heitiBarns(i, fjoldi) {
+    if (fjoldi <= 1) return 'Barn';
+    if (fjoldi === 2) return i === 0 ? 'Yngra barn' : 'Eldra barn';
+    if (i === 0) return 'Yngsta barn';
+    if (i === fjoldi - 1) return 'Elsta barn';
+    if (fjoldi === 3) return 'Næstelsta barn';
+    if (i === 1) return 'Næstyngsta barn';
+    return (RADTOLUR[i - 2] || (i + 1) + '.') + ' yngsta barn';
+  }
+
+  /*
+   * Starfsmannaafsláttur af dvalargjaldi, í krónum. Reiknast eingöngu af
+   * tímagjaldi (aldrei af fæðisgjaldi). Gjaldið sem eftir stendur er
+   * námundað upp, eins og niðurgreiðslan, svo afslátturinn er aldrei
+   * hærri en hlutfallið segir.
+   */
+  function starfsmannaafslattur(gj, gjald) {
+    if (!gj.starfsmannaafslattur) return 0;
+    return gjald - Math.ceil(gjald * (1 - gj.starfsmannaafslattur));
+  }
+
+  /*
    * Reikningur eins mánaðar.
    *
-   *   { born: [{ nr, dvalargjald, afslattur, faedisgjald, samtals }], samtals }
+   *   { born: [{ nr, dvalargjald, starfsmannaafslattur, afslattur,
+   *              faedisgjald, samtals }], samtals }
    *
-   * dvalargjald er gjaldið eftir niðurgreiðslu en fyrir systkinaafslátt —
+   * dvalargjald er gjaldið eftir niðurgreiðslu en fyrir aðra afslætti —
    * sama tala og upprunalega reiknivélin birti í línunni „Dvalargjald“.
+   *
+   * Samkvæmt reglunum (kafli 6) reiknast afslættir hver á eftir öðrum,
+   * hver af því gjaldi sem eftir stendur, og eingöngu af tímagjaldi:
+   *   1. niðurgreiðsla EÐA starfsmannaafsláttur, af dvalargjaldinu
+   *   2. systkinaafsláttur, af því sem eftir stendur
+   *
+   * Niðurgreiðslu og starfsmannaafslátt má ekki sameina (kafli 5 leyfir
+   * aðeins systkinaafslátt með hvorum um sig). Sé beðið um hvort tveggja
+   * gildir niðurgreiðslan og starfsmannaafslátturinn er hunsaður.
+   * Án starfsmannaafsláttar er útkoman nákvæmlega sú sama og áður.
    */
-  function reikna(gj, fjoldiBarna, klst, nidurgreitt) {
+  function reikna(gj, fjoldiBarna, klst, nidurgreitt, starfsmadur) {
     var gjald = nidurgreitt ? nidurgreittGjald(gj, klst) : dvalargjald(gj, klst);
+    var starfs = starfsmadur && !nidurgreitt ? starfsmannaafslattur(gj, gjald) : 0;
+    var grunnur = gjald - starfs;
     var faedi = gj.faedisgjald;
     var born = [];
     var samtals = 0;
     for (var i = 0; i < fjoldiBarna; i++) {
       var hlutf = systkinahlutfall(gj, i);
-      var dvol = Math.round(gjald * hlutf);
+      var dvol = Math.round(grunnur * hlutf);
       var samtalsBarn = dvol + faedi;
       born.push({
         nr: i + 1,
         dvalargjald: gjald,
-        afslattur: Math.round(gjald * (1 - hlutf)),
+        starfsmannaafslattur: starfs,
+        afslattur: Math.round(grunnur * (1 - hlutf)),
         faedisgjald: faedi,
         samtals: samtalsBarn
       });
@@ -244,6 +300,8 @@
     dvalargjald: dvalargjald,
     nidurgreittGjald: nidurgreittGjald,
     systkinahlutfall: systkinahlutfall,
+    starfsmannaafslattur: starfsmannaafslattur,
+    heitiBarns: heitiBarns,
     reikna: reikna,
     faedisgjaldSumma: faedisgjaldSumma
   };
