@@ -243,6 +243,21 @@ profa('Ógildur starfsmannaafsláttur kastar Error', function () {
   jafnt(kastadi, true, 'normalize kastar á 40 (á að vera 0.4)');
 });
 
+/* Heiti barna, frá yngsta til elsta (yngsta greiðir fullt gjald) */
+profa('Heiti barna', function () {
+  var listi = function (n) {
+    var o = [];
+    for (var i = 0; i < n; i++) o.push(R.heitiBarns(i, n));
+    return o.join(', ');
+  };
+  jafnt(listi(1), 'Barn', '1 barn');
+  jafnt(listi(2), 'Yngra barn, Eldra barn', '2 börn');
+  jafnt(listi(3), 'Yngsta barn, Næstelsta barn, Elsta barn', '3 börn');
+  jafnt(listi(5), 'Yngsta barn, Næstyngsta barn, Þriðja yngsta barn, Fjórða yngsta barn, Elsta barn', '5 börn');
+  jafnt(R.heitiBarns(8, 10), 'Níunda yngsta barn', '10 börn, barn 9');
+  jafnt(R.heitiBarns(9, 10), 'Elsta barn', '10 börn, barn 10');
+});
+
 /* 6. Allar gjaldskrárskrár: sundurliðun fæðisgjalds og virka árið */
 var index = lesaJson('gjaldskra/index.json');
 

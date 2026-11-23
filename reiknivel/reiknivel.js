@@ -122,7 +122,7 @@
       var d = document.createElement('div');
       d.className = 'child';
       var h = document.createElement('h3');
-      h.textContent = 'Barn ' + barn.nr;
+      h.textContent = R.heitiBarns(barn.nr - 1, r.born.length);
       d.appendChild(h);
       lina(d, 'Dvalargjald:', R.kr(barn.dvalargjald));
       if (barn.starfsmannaafslattur > 0) {

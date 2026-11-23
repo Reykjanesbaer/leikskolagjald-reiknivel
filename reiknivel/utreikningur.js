@@ -174,6 +174,29 @@
   }
 
   /*
+   * Heiti barns nr. i (0-grunnað) af fjoldi börnum, raðað frá yngsta.
+   * Reglurnar segja að yngsta barnið greiði alltaf fullt gjald og að
+   * systkinaafsláttur reiknist af gjaldi eldri systkina, svo röðin í
+   * reiknivélinni er frá yngsta til elsta.
+   *
+   *   1 barn:    Barn
+   *   2 börn:    Yngra barn, Eldra barn
+   *   3 börn:    Yngsta barn, Næstelsta barn, Elsta barn
+   *   4+ börn:   Yngsta barn, Næstyngsta barn, Þriðja yngsta barn, … Elsta barn
+   */
+  var RADTOLUR = ['Þriðja', 'Fjórða', 'Fimmta', 'Sjötta', 'Sjöunda', 'Áttunda', 'Níunda'];
+
+  function heitiBarns(i, fjoldi) {
+    if (fjoldi <= 1) return 'Barn';
+    if (fjoldi === 2) return i === 0 ? 'Yngra barn' : 'Eldra barn';
+    if (i === 0) return 'Yngsta barn';
+    if (i === fjoldi - 1) return 'Elsta barn';
+    if (fjoldi === 3) return 'Næstelsta barn';
+    if (i === 1) return 'Næstyngsta barn';
+    return (RADTOLUR[i - 2] || (i + 1) + '.') + ' yngsta barn';
+  }
+
+  /*
    * Starfsmannaafsláttur af dvalargjaldi, í krónum. Reiknast eingöngu af
    * tímagjaldi (aldrei af fæðisgjaldi). Gjaldið sem eftir stendur er
    * námundað upp, eins og niðurgreiðslan, svo afslátturinn er aldrei
@@ -278,6 +301,7 @@
     nidurgreittGjald: nidurgreittGjald,
     systkinahlutfall: systkinahlutfall,
     starfsmannaafslattur: starfsmannaafslattur,
+    heitiBarns: heitiBarns,
     reikna: reikna,
     faedisgjaldSumma: faedisgjaldSumma
   };

@@ -451,7 +451,8 @@
     });
     numRow(misc, 'Starfsmannaafsláttur (%)', 'starfsmannaafslattur');
     prices.systkinaafslattur.forEach(function (_, i) {
-      numRow(misc, 'Barn ' + (i + 1) + (i === prices.systkinaafslattur.length - 1 ? '+' : '') + ' greiðir (%)',
+      var sidast = i === prices.systkinaafslattur.length - 1;
+      numRow(misc, R.heitiBarns(i, 10) + (sidast && i > 0 ? ' og eldri' : '') + ' greiðir (%)',
         'systkina.' + i);
     });
     pricesToForm();
