@@ -15,9 +15,11 @@ const H = {
   pad: 64,
   title: 54,
   fields: 251,
+  staff: 87,
   resultsHead: 88,
   child: 151,
   sibling: 25,
+  staffLine: 25,
   total: 81,
   foodBase: 87,
   foodLine: 22,
@@ -33,11 +35,13 @@ function hydur(o: {
   synaFaedi: boolean
   synaFyrirvara: boolean
   born: number
+  starfsmadur: boolean
 }): number {
   const b = Math.max(1, Math.min(10, Math.round(o.born)))
-  let h = H.pad + H.fields + H.resultsHead + H.total + H.slaki
+  let h = H.pad + H.fields + H.staff + H.resultsHead + H.total + H.slaki
   if (o.synaTitil) h += H.title
   h += b * H.child + Math.max(0, b - 1) * H.sibling
+  if (o.starfsmadur) h += b * H.staffLine
   if (o.synaFaedi) h += H.foodBase + FAEDISLINUR * H.foodLine
   if (o.synaFyrirvara) h += H.note
   return h
@@ -96,6 +100,7 @@ export const LeikskolagjaldComponent: React.FC<LeikskolagjaldBlock> = ({
   flestBorn,
   klukkustundir,
   nidurgreitt,
+  starfsmadur,
   ar,
 }) => {
   const radius = inRange(hornarunnun, 0, 32, 16)
@@ -125,6 +130,7 @@ export const LeikskolagjaldComponent: React.FC<LeikskolagjaldBlock> = ({
   if (born !== 1) params.set('dchildren', String(born))
   if (klst !== 4) params.set('dhours', String(klst))
   if (nidurgreitt) params.set('dsub', '1')
+  if (starfsmadur) params.set('dstaff', '1')
   if (flest !== 5) params.set('maxchildren', String(flest))
 
   const litir: Record<string, string | null | undefined> = { accent, onaccent, bg, bgdark }
@@ -153,6 +159,7 @@ export const LeikskolagjaldComponent: React.FC<LeikskolagjaldBlock> = ({
           synaFaedi: synaFaedi !== false,
           synaFyrirvara: synaFyrirvara !== false,
           born,
+          starfsmadur: !!starfsmadur,
         }),
         border: 0,
         overflow: 'hidden',

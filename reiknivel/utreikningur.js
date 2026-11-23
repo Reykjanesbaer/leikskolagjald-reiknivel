@@ -52,7 +52,8 @@
       faedisgjaldSundurlidun: [],
       nidurgreidsla: 0,
       nidurgreidslaUndantekningar: {},
-      systkinaafslattur: [1]
+      systkinaafslattur: [1],
+      starfsmannaafslattur: 0
     };
 
     if (!gj.ar) villur.push('„ar“ vantar');
@@ -125,6 +126,13 @@
       if (hlutf.length) gj.systkinaafslattur = hlutf;
     }
 
+    /* Valfrjálst: gjaldskrá án reitsins hefur engan starfsmannaafslátt */
+    if (raw.starfsmannaafslattur != null) {
+      var st = tala(raw.starfsmannaafslattur);
+      if (st === null || st < 0 || st > 1) villur.push('„starfsmannaafslattur“ verður að vera hlutfall á milli 0 og 1');
+      else gj.starfsmannaafslattur = st;
+    }
+
     if (villur.length) throw new Error('Gjaldskráin er ógild: ' + villur.join('; ') + '.');
     return gj;
   }
@@ -166,26 +174,47 @@
   }
 
   /*
+   * Starfsmannaafsláttur af dvalargjaldi, í krónum. Reiknast eingöngu af
+   * tímagjaldi (aldrei af fæðisgjaldi). Gjaldið sem eftir stendur er
+   * námundað upp, eins og niðurgreiðslan, svo afslátturinn er aldrei
+   * hærri en hlutfallið segir.
+   */
+  function starfsmannaafslattur(gj, gjald) {
+    if (!gj.starfsmannaafslattur) return 0;
+    return gjald - Math.ceil(gjald * (1 - gj.starfsmannaafslattur));
+  }
+
+  /*
    * Reikningur eins mánaðar.
    *
-   *   { born: [{ nr, dvalargjald, afslattur, faedisgjald, samtals }], samtals }
+   *   { born: [{ nr, dvalargjald, starfsmannaafslattur, afslattur,
+   *              faedisgjald, samtals }], samtals }
    *
-   * dvalargjald er gjaldið eftir niðurgreiðslu en fyrir systkinaafslátt —
+   * dvalargjald er gjaldið eftir niðurgreiðslu en fyrir aðra afslætti —
    * sama tala og upprunalega reiknivélin birti í línunni „Dvalargjald“.
+   *
+   * Afslættir leggjast saman í þessari röð:
+   *   1. niðurgreiðsla (breytir sjálfu dvalargjaldinu)
+   *   2. starfsmannaafsláttur, af dvalargjaldinu
+   *   3. systkinaafsláttur, af því sem eftir stendur eftir starfsmannaafslátt
+   * Án starfsmannaafsláttar er útkoman nákvæmlega sú sama og áður.
    */
-  function reikna(gj, fjoldiBarna, klst, nidurgreitt) {
+  function reikna(gj, fjoldiBarna, klst, nidurgreitt, starfsmadur) {
     var gjald = nidurgreitt ? nidurgreittGjald(gj, klst) : dvalargjald(gj, klst);
+    var starfs = starfsmadur ? starfsmannaafslattur(gj, gjald) : 0;
+    var grunnur = gjald - starfs;
     var faedi = gj.faedisgjald;
     var born = [];
     var samtals = 0;
     for (var i = 0; i < fjoldiBarna; i++) {
       var hlutf = systkinahlutfall(gj, i);
-      var dvol = Math.round(gjald * hlutf);
+      var dvol = Math.round(grunnur * hlutf);
       var samtalsBarn = dvol + faedi;
       born.push({
         nr: i + 1,
         dvalargjald: gjald,
-        afslattur: Math.round(gjald * (1 - hlutf)),
+        starfsmannaafslattur: starfs,
+        afslattur: Math.round(grunnur * (1 - hlutf)),
         faedisgjald: faedi,
         samtals: samtalsBarn
       });
@@ -244,6 +273,7 @@
     dvalargjald: dvalargjald,
     nidurgreittGjald: nidurgreittGjald,
     systkinahlutfall: systkinahlutfall,
+    starfsmannaafslattur: starfsmannaafslattur,
     reikna: reikna,
     faedisgjaldSumma: faedisgjaldSumma
   };

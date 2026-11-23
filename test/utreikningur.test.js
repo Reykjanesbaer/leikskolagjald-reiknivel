@@ -164,7 +164,71 @@ profa('Systkinaafsláttur nær yfir fleiri börn en hlutföllin', function () {
   jafnt(r.samtals, 18308 + Math.round(18308 * 0.5) + 8 * 12165, 'Samtals fyrir 8 börn');
 });
 
-/* 5. Allar gjaldskrárskrár: sundurliðun fæðisgjalds og virka árið */
+/* 5. Starfsmannaafsláttur: 40 % af dvalargjaldi, á undan systkinaafslætti */
+profa('Starfsmannaafsláttur: 2 börn, 5 klst.', function () {
+  var r = R.reikna(gj, 2, 5, false, true);
+  /* 22.885 × 0,6 = 13.731 eftir starfsmannaafslátt */
+  jafnt(r.born[0].dvalargjald, 22885, 'Dvalargjald, barn 1');
+  jafnt(r.born[0].starfsmannaafslattur, 9154, 'Starfsmannaafsláttur, barn 1');
+  jafnt(r.born[0].afslattur, 0, 'Systkinaafsláttur, barn 1');
+  jafnt(r.born[0].samtals, 13731 + 12165, 'Samtals, barn 1');
+  /* Systkinaafsláttur af 13.731, ekki af 22.885 */
+  jafnt(r.born[1].starfsmannaafslattur, 9154, 'Starfsmannaafsláttur, barn 2');
+  jafnt(r.born[1].afslattur, Math.round(13731 * 0.5), 'Systkinaafsláttur, barn 2');
+  jafnt(r.born[1].samtals, Math.round(13731 * 0.5) + 12165, 'Samtals, barn 2');
+  jafnt(r.samtals, 13731 + Math.round(13731 * 0.5) + 2 * 12165, 'Samtals');
+});
+
+profa('Starfsmannaafsláttur snertir ekki fæðisgjald', function () {
+  [1, 2, 3, 5].forEach(function (born) {
+    R.reikna(gj, born, 8, false, true).born.forEach(function (b) {
+      jafnt(b.faedisgjald, 12165, 'Fæðisgjald, barn ' + b.nr);
+    });
+  });
+});
+
+profa('Starfsmannaafsláttur ofan á niðurgreiðslu', function () {
+  var nid = R.nidurgreittGjald(gj, 7);
+  var r = R.reikna(gj, 1, 7, true, true);
+  jafnt(r.born[0].dvalargjald, nid, 'Dvalargjald eftir niðurgreiðslu');
+  jafnt(r.born[0].samtals, Math.ceil(nid * 0.6) + 12165, 'Samtals');
+});
+
+profa('Námundun: eftirstandandi gjald námundað upp', function () {
+  /* 18.308 × 0,6 = 10.984,8 → 10.985, afsláttur 7.323 */
+  jafnt(R.starfsmannaafslattur(gj, 18308), 7323, 'Afsláttur af 18.308');
+});
+
+profa('Án haksins er allt óbreytt (öll 100 tilvik)', function () {
+  [1, 2, 3, 4, 5].forEach(function (born) {
+    HOURS.forEach(function (klst) {
+      [false, true].forEach(function (nid) {
+        var a = R.reikna(gj, born, klst, nid);
+        var b = R.reikna(gj, born, klst, nid, false);
+        jafnt(b.samtals, a.samtals, born + ' börn, ' + klst + ' klst.');
+        jafnt(b.born[0].starfsmannaafslattur, 0, 'Enginn starfsmannaafsláttur');
+      });
+    });
+  });
+});
+
+profa('Gjaldskrá án reitsins hefur engan starfsmannaafslátt', function () {
+  var raw = lesaJson('gjaldskra/2026.json');
+  delete raw.starfsmannaafslattur;
+  var g = R.normalize(raw);
+  jafnt(g.starfsmannaafslattur, 0, 'Hlutfall');
+  jafnt(R.reikna(g, 2, 5, false, true).samtals, R.reikna(g, 2, 5, false).samtals, 'Samtals');
+});
+
+profa('Ógildur starfsmannaafsláttur kastar Error', function () {
+  var raw = lesaJson('gjaldskra/2026.json');
+  raw.starfsmannaafslattur = 40;
+  var kastadi = false;
+  try { R.normalize(raw); } catch (e) { kastadi = /starfsmannaafslattur/.test(e.message); }
+  jafnt(kastadi, true, 'normalize kastar á 40 (á að vera 0.4)');
+});
+
+/* 6. Allar gjaldskrárskrár: sundurliðun fæðisgjalds og virka árið */
 var index = lesaJson('gjaldskra/index.json');
 
 profa('gjaldskra/index.json: virka árið er til', function () {
@@ -193,7 +257,7 @@ index.ar.forEach(function (e) {
   });
 });
 
-/* 6. Ógild gjaldskrá stöðvast með skýrum skilaboðum */
+/* 7. Ógild gjaldskrá stöðvast með skýrum skilaboðum */
 profa('Ógild gjaldskrá kastar Error', function () {
   var raw = lesaJson('gjaldskra/2026.json');
   delete raw.dvalargjald;

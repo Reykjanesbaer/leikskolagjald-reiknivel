@@ -217,6 +217,12 @@ export const Leikskolagjald: Block = {
           label: 'Niðurgreitt sjálfgefið hakað',
           defaultValue: false,
         },
+        {
+          name: 'starfsmadur',
+          type: 'checkbox',
+          label: 'Starfsmannaafsláttur sjálfgefið hakaður',
+          defaultValue: false,
+        },
       ],
     },
     {

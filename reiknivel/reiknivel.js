@@ -28,7 +28,12 @@
   var gj = null;
 
   /* Val notandans í reiknivélinni; upphafsstaðan kemur úr stillingunum */
-  var state = { born: opts.dchildren, klst: opts.dhours, nidurgreitt: !!opts.dsub };
+  var state = {
+    born: opts.dchildren,
+    klst: opts.dhours,
+    nidurgreitt: !!opts.dsub,
+    starfsmadur: !!opts.dstaff
+  };
 
   function dokkt() {
     return opts.theme === 'dark' || (opts.theme === 'auto' && darkMq.matches);
@@ -79,6 +84,13 @@
     cs.value = String(state.born);
     hs.value = String(state.klst);
     $('subsidized').checked = state.nidurgreitt;
+
+    /* Gjaldskrá án starfsmannaafsláttar sýnir ekki hakið */
+    var hlutfall = gj.starfsmannaafslattur;
+    $('staffBox').hidden = !hlutfall;
+    if (!hlutfall) state.starfsmadur = false;
+    $('staffPct').textContent = Math.round(hlutfall * 100) + '%';
+    $('staff').checked = state.starfsmadur;
   }
 
   function valkostur(value, text) {
@@ -103,7 +115,7 @@
   }
 
   function teiknaNidurstodur() {
-    var r = R.reikna(gj, state.born, state.klst, state.nidurgreitt);
+    var r = R.reikna(gj, state.born, state.klst, state.nidurgreitt, state.starfsmadur);
     var box = $('children');
     box.textContent = '';
     r.born.forEach(function (barn) {
@@ -113,6 +125,9 @@
       h.textContent = 'Barn ' + barn.nr;
       d.appendChild(h);
       lina(d, 'Dvalargjald:', R.kr(barn.dvalargjald));
+      if (barn.starfsmannaafslattur > 0) {
+        lina(d, 'Starfsmannaafsláttur:', '-' + R.kr(barn.starfsmannaafslattur), 'neg');
+      }
       if (barn.afslattur > 0) lina(d, 'Systkinaafsláttur:', '-' + R.kr(barn.afslattur), 'neg');
       lina(d, 'Fæðisgjald:', R.kr(barn.faedisgjald));
       lina(d, 'Samtals:', R.kr(barn.samtals), 'sum');
@@ -221,6 +236,10 @@
     state.nidurgreitt = e.target.checked;
     teikna();
   });
+  $('staff').addEventListener('change', function (e) {
+    state.starfsmadur = e.target.checked;
+    teikna();
+  });
 
   /* theme=auto bregst við því að notandinn skipti um stillingu á meðan
      síðan er opin */
@@ -250,6 +269,7 @@
       state.born = opts.dchildren;
       state.klst = opts.dhours;
       state.nidurgreitt = !!opts.dsub;
+      state.starfsmadur = !!opts.dstaff;
     }
     teikna();
   });

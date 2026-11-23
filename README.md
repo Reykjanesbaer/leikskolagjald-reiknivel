@@ -34,7 +34,7 @@ meðal í Payload CMS.
   title="Leikskólagjald reiknivél"
   loading="lazy"
   scrolling="no"
-  style="width:100%;max-width:min(672px,100%);height:911px;border:0;display:block;margin-left:0;margin-right:auto">
+  style="width:100%;max-width:min(672px,100%);height:998px;border:0;display:block;margin-left:0;margin-right:auto">
 </iframe>
 ```
 
@@ -52,11 +52,12 @@ frekar en að breyta honum í höndunum:
 
 | Stillingar | Hæð |
 | --- | --- |
-| Sjálfgefið (1 barn) | `911px` |
-| 2 börn | `1087px` |
-| 3 börn | `1263px` |
-| 5 börn | `1615px` |
+| Sjálfgefið (1 barn) | `998px` |
+| 2 börn | `1174px` |
+| 3 börn | `1350px` |
+| 5 börn | `1702px` |
 | Hvert barn umfram það fyrsta | `+176px` |
+| `dstaff=1` (starfsmannaafsláttur hakaður) | `+25px` á hvert barn |
 | `food=0` (án sundurliðunar) | `−153px` |
 | `note=0` (án fyrirvara) | `−65px` |
 | `title=0` (án titils) | `−54px` |
@@ -148,6 +149,7 @@ Allar stillingar eru færibreytur í slóðinni. Ógild gildi (utan bils eða
 | `dchildren` | `1`–`maxchildren` | `1` | Sjálfgefinn fjöldi barna |
 | `dhours` | gildi úr `klukkustundir` | `4` | Sjálfgefnar klukkustundir |
 | `dsub` | `0`, `1` | `0` | Niðurgreitt sjálfgefið hakað |
+| `dstaff` | `0`, `1` | `0` | Starfsmannaafsláttur sjálfgefið hakaður |
 | `maxchildren` | `1`–`10` | `5` | Flest börn í valmyndinni |
 | `accent` | hex án `#` | `1D4D91` | Höfuðlitur |
 | `onaccent` | hex án `#` | `FFFFFF` | Texti á höfuðlit |
@@ -196,6 +198,7 @@ gjaldskra/
 | `nidurgreidsla` | Hlutfall, `0.25` = 25 % afsláttur |
 | `nidurgreidslaUndantekningar` | Föst niðurgreidd gjöld sem víkja frá reglunni |
 | `systkinaafslattur` | Hlutfall dvalargjalds sem greitt er fyrir hvert barn |
+| `starfsmannaafslattur` | Valfrjálst hlutfall, `0.4` = 40 % af dvalargjaldi. Vanti reitinn eða sé hann `0` birtist hakið ekki |
 
 Reglurnar:
 
@@ -206,6 +209,11 @@ Reglurnar:
   barn. Síðasta gildið gildir líka um öll börn þar á eftir, svo
   `[1, 0.5, 0]` þýðir: fyrsta barn 100 %, annað 50 %, öll hin 0 %, sama hve
   börnin eru mörg.
+- **`starfsmannaafslattur`** reiknast eingöngu af dvalargjaldi, aldrei af
+  fæðisgjaldi. Afslættirnir leggjast saman í þessari röð: niðurgreiðsla
+  breytir dvalargjaldinu, starfsmannaafsláttur er tekinn af því og
+  systkinaafsláttur af því sem þá stendur eftir. Gjaldið eftir
+  starfsmannaafslátt er námundað upp, eins og niðurgreidda gjaldið.
 - **`nidurgreidslaUndantekningar`** heldur utan um tilvik þar sem niðurgreidda
   gjaldið er fast og víkur frá reglunni. Í gjaldskrá 2026 er þetta 8,5 klst.
   (30.052 kr., ekki 30.051 kr. sem reglan gæfi). **Ekki fjarlægja það.**
@@ -273,6 +281,11 @@ keyrir í CI við hverja breytingu:
 ```bash
 node test/utreikningur.test.js
 ```
+
+Starfsmannaafslátturinn er nýr og á sér ekki fyrirmynd í upprunalegu
+reiknivélinni. Hann hefur eigin próf (dæmi upp á krónu, fæðisgjald óbreytt,
+samspil við niðurgreiðslu og systkinaafslátt). Án haksins er útkoman í öllum
+100 tilvikunum sú sama og áður.
 
 Prófið athugar líka að 8,5 klst. niðurgreitt skili 30.052 kr., að
 sundurliðun fæðisgjalds stemmi í öllum skrám í `gjaldskra/`, að virka árið
